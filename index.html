@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+
+<body>
+	<div id="reader" width="600px"></div>
+
+	<h1 id="result" style="display: none"></h1>
+
+	<button id="start_scanning">Tara</button>
+	<button id="stop_scanning" style="display: none">Vazgeç</button>
+</body>
+
+<script>
+	let cameraId = null;
+	let html5QrCode = null;
+
+	// This method will trigger user permissions
+	Html5Qrcode.getCameras().then(devices => {
+		if (devices && devices.length) {
+			cameraId = devices[0].id;
+
+			const start_button = document.getElementById("start_scanning");
+			const stop_button = document.getElementById("stop_scanning");
+			const result = document.getElementById("result");
+			start_button.onclick = () => {
+				start_button.style.display = "none";
+				stop_button.style.display = "inline-block";
+				result.style.display = "none";
+
+				html5QrCode = new Html5Qrcode("reader");
+				html5QrCode.start(
+					cameraId,
+					{ fps: 10 },
+					(decodedText) => {
+						start_button.style.display = "inline-block";
+						stop_button.style.display = "none";
+						result.style.display = "block";
+						result.innerText = decodedText;
+						html5QrCode.stop();
+					},
+				).catch((err) => { alert("Kamera başlatılamadı."); console.log(err); });
+			}
+			stop_button.onclick = () => {
+				start_button.style.display = "inline-block";
+				stop_button.style.display = "none";
+				result.style.display = "none";
+				html5QrCode.stop();
+			}
+		}
+	}).catch(err => {
+		alert("Kamera bulunamadı.");
+		console.log(err);
+	});
+</script>
+
+<!--
+<script>
+	function onScanSuccess(decodedText, decodedResult) {
+		alert(decodedText);
+		html5QrCode.pause();
+	}
+
+	let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE] }, false);
+	html5QrcodeScanner.render(onScanSuccess);
+	window.html5QrcodeScanner = html5QrcodeScanner;
+</script>
+-->
+
+</html>
